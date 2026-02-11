@@ -1,5 +1,4 @@
 import { relations } from "drizzle-orm";
-import { conversationAssignment } from "../conversation/conversation-assignment";
 import { account } from "./account";
 import { invitation } from "./invitation";
 import { member } from "./member";
@@ -33,7 +32,7 @@ export const organizationRelations = relations(organization, ({ many }) => ({
   invitations: many(invitation),
 }));
 
-export const memberRelations = relations(member, ({ one, many }) => ({
+export const memberRelations = relations(member, ({ one }) => ({
   organization: one(organization, {
     fields: [member.organizationId],
     references: [organization.id],
@@ -42,11 +41,6 @@ export const memberRelations = relations(member, ({ one, many }) => ({
     fields: [member.userId],
     references: [user.id],
   }),
-  /**
-   * Conversation assignments for this member (admin/owner).
-   * Replaces the old concierge assignments relation.
-   */
-  assignments: many(conversationAssignment),
 }));
 
 export const invitationRelations = relations(invitation, ({ one }) => ({
