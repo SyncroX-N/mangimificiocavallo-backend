@@ -1,0 +1,83 @@
+import type { PlaceDetailsParams } from "./types";
+
+export const GOOGLE_PLACES_BASE_URL = "https://places.googleapis.com/v1";
+
+export const AUTOCOMPLETE_FIELD_MASK = [
+  "suggestions.placePrediction.placeId",
+  "suggestions.placePrediction.text",
+  "suggestions.placePrediction.structuredFormat",
+  "suggestions.placePrediction.types",
+].join(",");
+
+export const DEFAULT_PLACE_FIELDS = [
+  "id",
+  "displayName",
+  "editorialSummary",
+  "formattedAddress",
+  "shortFormattedAddress",
+  "addressComponents",
+  "location",
+  "internationalPhoneNumber",
+  "nationalPhoneNumber",
+  "types",
+  "websiteUri",
+  "googleMapsUri",
+  "rating",
+  "userRatingCount",
+  "regularOpeningHours",
+].join(",");
+
+export function buildHeaders(apiKey: string, fieldMask?: string): HeadersInit {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "X-Goog-Api-Key": apiKey,
+  };
+
+  if (fieldMask) {
+    headers["X-Goog-FieldMask"] = fieldMask;
+  }
+
+  return headers;
+}
+
+export async function parseJsonResponse<T>(
+  response: Response,
+  fallbackMessage: string
+): Promise<T> {
+  const contentType = response.headers.get("content-type");
+  const isJson = contentType?.includes("application/json");
+  const payload = isJson ? await response.json() : null;
+
+  if (!response.ok) {
+    const message =
+      payload?.error?.message ??
+      payload?.message ??
+      fallbackMessage ??
+      "Failed to fetch data from Google Places";
+    throw new Error(message);
+  }
+
+  return (payload ?? {}) as T;
+}
+
+export function buildPlaceDetailsSearchParams(
+  params: PlaceDetailsParams
+): URLSearchParams {
+  const searchParams = new URLSearchParams();
+  const fieldMask = params.fields?.length
+    ? params.fields.join(",")
+    : DEFAULT_PLACE_FIELDS;
+
+  searchParams.set("fields", fieldMask);
+  if (params.languageCode) {
+    searchParams.set("languageCode", params.languageCode);
+  }
+  if (params.regionCode) {
+    searchParams.set("regionCode", params.regionCode);
+  }
+  if (params.sessionToken) {
+    searchParams.set("sessionToken", params.sessionToken);
+  }
+
+  return searchParams;
+}

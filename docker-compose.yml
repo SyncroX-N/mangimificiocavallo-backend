@@ -1,0 +1,23 @@
+version: "3.9"
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: trotter-postgres-new
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: trotter-new
+      POSTGRES_PASSWORD: trotter-new
+      POSTGRES_DB: trotter-new
+    ports:
+      - "5432:5432"
+    volumes:
+      - trotter-db-new:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trotter-new -d trotter-new"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  trotter-db-new:
