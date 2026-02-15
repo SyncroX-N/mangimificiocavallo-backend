@@ -4,19 +4,11 @@ const envSchema = z.object({
   DATABASE_URL: z.string(),
   APPLICATION_ALLOWED_ORIGINS: z.string(),
   SENTRY_DSN: z.string().optional(),
+  SENTRY_DNS: z.string().optional(),
   BETTER_AUTH_URL: z.string(),
+  BASE_URL: z.string().optional(),
   BETTER_AUTH_SECRET: z.string(),
-  GOOGLE_WEB_CLIENT_ID: z.string(),
-  GOOGLE_WEB_CLIENT_SECRET: z.string(),
-  IOS_CLIENT_ID: z.string(),
-  IOS_CLIENT_SECRET: z.string(),
   GOOGLE_PLACES_API_KEY: z.string(),
-  FIRECRAWL_API_KEY: z.string(),
-  OPENROUTER_KEY: z.string(),
-  OPENROUTER_EMBEDDING_MODEL: z
-    .string()
-    .default("openai/text-embedding-3-small"),
-  PGVECTOR_ENABLED: z.string().optional(),
 });
 
 /**

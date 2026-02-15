@@ -5,6 +5,7 @@
  */
 import { sql } from "drizzle-orm";
 import { boolean, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { role } from "./enums";
 
 export const user = pgTable("user", {
   id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
@@ -14,8 +15,7 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
-  role: text("role"),
-  companyRole: text("company_role"),
+  role: role("role"),
   banned: boolean("banned").default(false),
   banReason: text("ban_reason"),
   banExpires: timestamp("ban_expires"),

@@ -9,11 +9,12 @@ import { secureHeaders } from "hono/secure-headers";
 import { timing } from "hono/timing";
 import { auth } from "../auth";
 import { errorHandler, notFound } from "./middleware/error.middleware";
+import { adminRoutes } from "./routes/admin";
 import { healthRoute } from "./routes/health";
-import { sharedRoutes } from "./routes/shared";
-import { webRoutes } from "./routes/web";
+import { getAllowedOrigins, resolveCorsOrigin } from "./utils/allowed-origins";
 
 // Create the base app
+const allowedOrigins = getAllowedOrigins();
 
 // API routes with middleware
 const app = new Hono({ strict: false })
@@ -23,38 +24,7 @@ const app = new Hono({ strict: false })
   .use(
     "*",
     cors({
-      origin: (origin): string => {
-        // Allow requests from localhost:3000 (dashboard) and mobile app origins
-        const allowedOrigins = [
-          "http://localhost:3000",
-          "http://127.0.0.1:3000",
-        ];
-
-        // Check if origin matches any allowed pattern
-        if (!origin) {
-          return allowedOrigins[0]; // Default to first origin if no origin header
-        }
-
-        // For development, allow localhost origins
-        if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
-          return origin;
-        }
-
-        // Check if origin matches allowed origins
-        if (allowedOrigins.includes(origin)) {
-          return origin;
-        }
-
-        // For mobile app origins (exp://, trotter-business://)
-        if (
-          origin.startsWith("exp://") ||
-          origin.startsWith("trotter-business://")
-        ) {
-          return origin;
-        }
-
-        return allowedOrigins[0];
-      },
+      origin: (origin): string => resolveCorsOrigin(origin),
       credentials: true,
       allowMethods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
       allowHeaders: [
@@ -72,17 +42,22 @@ const app = new Hono({ strict: false })
       await next();
       return;
     }
-    return csrf({ origin: "http://localhost:3000" })(c, next);
+    return csrf({ origin: allowedOrigins })(c, next);
   })
   .use("*", prettyJSON())
   .use("*", secureHeaders())
   .use("*", timing())
-  .use("*", sentry({ dsn: process.env.SENTRY_DSN, tracesSampleRate: 0.2 }))
+  .use(
+    "*",
+    sentry({
+      dsn: process.env.SENTRY_DSN ?? process.env.SENTRY_DNS,
+      tracesSampleRate: 0.2,
+    })
+  )
   // Routes
   // .route("/app", appRoutes) //@TODO: add app routes
   // .route("/admin", adminRoutes) //@TODO: add admin routes
-  .route("/web", webRoutes)
-  .route("/shared", sharedRoutes)
+  .route("/admin", adminRoutes)
   .route("/health", healthRoute)
   .onError(errorHandler)
   .notFound(notFound);

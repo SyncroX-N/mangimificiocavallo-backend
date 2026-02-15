@@ -1,5 +1,6 @@
 /** biome-ignore-all lint/performance/noBarrelFile: <ok> */
 import { account } from "./auth/account";
+import { role } from "./auth/enums";
 import { invitation } from "./auth/invitation";
 import { member } from "./auth/member";
 import { organization } from "./auth/organization";
@@ -14,21 +15,20 @@ import {
 import { session } from "./auth/session";
 import { user } from "./auth/user";
 import { verification } from "./auth/verification";
-
-import { locationTypeEnum, roleEnum } from "./enums";
-
-import { area } from "./location/area";
-import { city } from "./location/city";
-import { country } from "./location/country";
-import { location } from "./location/location";
+import { customerAddress, customerAddressType } from "./customer/address";
+import { customer } from "./customer/customer";
 import {
-  areaRelations,
-  cityRelations,
-  countryRelations,
-  locationRelations,
-} from "./location/relations";
+  customerAddressRelations,
+  customerRelations,
+} from "./customer/relations";
+import { order } from "./order/order";
+import { documentType, paymentMode, paymentStatus } from "./payment/enum";
+import { paymentLineItem } from "./payment/line-item";
+import { payment } from "./payment/payment";
 
 export { account } from "./auth/account";
+// Named re-exports for drizzle-kit static discovery
+export { role } from "./auth/enums";
 export { invitation } from "./auth/invitation";
 export { member } from "./auth/member";
 export { organization } from "./auth/organization";
@@ -43,26 +43,28 @@ export {
 export { session } from "./auth/session";
 export { user } from "./auth/user";
 export { verification } from "./auth/verification";
-
-// Named re-exports for drizzle-kit static discovery
-export { locationTypeEnum, roleEnum } from "./enums";
-
-export { area } from "./location/area";
-export { city } from "./location/city";
-export { country } from "./location/country";
-export { location } from "./location/location";
 export {
-  areaRelations,
-  cityRelations,
-  countryRelations,
-  locationRelations,
-} from "./location/relations";
+  customerAddress,
+  customerAddressType,
+} from "./customer/address";
+export { customer } from "./customer/customer";
+export {
+  customerAddressRelations,
+  customerRelations,
+} from "./customer/relations";
+export { order } from "./order/order";
+export { documentType, paymentMode, paymentStatus } from "./payment/enum";
+export { paymentLineItem } from "./payment/line-item";
+export { payment } from "./payment/payment";
 
 // Default export for drizzle schema
 export default {
   // Enums
-  locationTypeEnum,
-  roleEnum,
+  role,
+  paymentMode,
+  paymentStatus,
+  customerAddressType,
+  documentType,
   // Tables
   organization,
   user,
@@ -71,10 +73,11 @@ export default {
   verification,
   member,
   invitation,
-  country,
-  city,
-  area,
-  location,
+  customer,
+  customerAddress,
+  order,
+  paymentLineItem,
+  payment,
   // Relations
   userRelations,
   sessionRelations,
@@ -82,8 +85,6 @@ export default {
   organizationRelations,
   memberRelations,
   invitationRelations,
-  countryRelations,
-  cityRelations,
-  areaRelations,
-  locationRelations,
+  customerRelations,
+  customerAddressRelations,
 };

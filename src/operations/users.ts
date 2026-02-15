@@ -1,9 +1,9 @@
 import type { InferSelectModel } from "drizzle-orm";
-import { countDistinct, desc, eq, ilike, or } from "drizzle-orm";
+import { and, countDistinct, desc, eq, ilike, or } from "drizzle-orm";
 import database from "@/db";
 import { member, organization, user } from "@/db/schema";
-import type { ListUsersParams } from "@/routes/web/users/list";
-import type { UpdateUserInput } from "@/routes/web/users/update";
+import type { ListUsersParams } from "@/routes/admin/users/list";
+import type { UpdateUserInput } from "@/routes/admin/users/update";
 
 const publicUserColumns = {
   id: true,
@@ -20,9 +20,33 @@ const publicUserColumns = {
 /**
  * Get a user by id
  * @param userId - The id of the user
+ * @param organizationId - Optional organization scope
  * @returns The user
  */
-export async function getUserById(userId: string) {
+export async function getUserById(userId: string, organizationId?: string) {
+  if (organizationId) {
+    const [row] = await database
+      .select({
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        name: user.name,
+        email: user.email,
+        emailVerified: user.emailVerified,
+        image: user.image,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      })
+      .from(user)
+      .innerJoin(member, eq(member.userId, user.id))
+      .where(
+        and(eq(user.id, userId), eq(member.organizationId, organizationId))
+      )
+      .limit(1);
+
+    return row ?? null;
+  }
+
   const row = await database.query.user.findFirst({
     where: (u, { eq: equals }) => equals(u.id, userId),
     columns: publicUserColumns,
@@ -33,9 +57,13 @@ export async function getUserById(userId: string) {
 /**
  * List users
  * @param params - The parameters
+ * @param organizationId - Organization scope
  * @returns The users
  */
-export async function listUsers(params: ListUsersParams) {
+export async function listUsers(
+  organizationId: string,
+  params: ListUsersParams
+) {
   const { page, perPage, search } = params;
   const sanitizedSearch = search?.trim() || undefined;
 
@@ -49,6 +77,11 @@ export async function listUsers(params: ListUsersParams) {
         )
       : undefined;
 
+  const whereClause = and(
+    eq(member.organizationId, organizationId),
+    searchFilter
+  );
+
   const baseUsersQuery = database
     .select({
       id: user.id,
@@ -58,7 +91,6 @@ export async function listUsers(params: ListUsersParams) {
       email: user.email,
       emailVerified: user.emailVerified,
       image: user.image,
-      companyRole: user.companyRole,
       createdAt: user.createdAt,
       member: {
         id: member.id,
@@ -68,27 +100,21 @@ export async function listUsers(params: ListUsersParams) {
         organizationName: organization.name,
       },
     })
-    .from(user)
-    .leftJoin(member, eq(member.userId, user.id))
+    .from(member)
+    .innerJoin(user, eq(member.userId, user.id))
     .leftJoin(organization, eq(member.organizationId, organization.id))
+    .where(whereClause)
     .orderBy(desc(user.createdAt))
     .limit(perPage)
     .offset((page - 1) * perPage);
 
-  const usersQuery = searchFilter
-    ? baseUsersQuery.where(searchFilter)
-    : baseUsersQuery;
-
-  const baseTotalQuery = database
+  const totalQuery = database
     .select({ total: countDistinct(user.id) })
-    .from(user)
-    .leftJoin(member, eq(member.userId, user.id));
+    .from(member)
+    .innerJoin(user, eq(member.userId, user.id))
+    .where(whereClause);
 
-  const totalQuery = searchFilter
-    ? baseTotalQuery.where(searchFilter)
-    : baseTotalQuery;
-
-  const [users, [{ total }]] = await Promise.all([usersQuery, totalQuery]);
+  const [users, [{ total }]] = await Promise.all([baseUsersQuery, totalQuery]);
 
   return { users, total };
 }
@@ -101,8 +127,21 @@ export async function listUsers(params: ListUsersParams) {
  */
 export async function updateUser(
   id: string,
+  organizationId: string,
   input: UpdateUserInput
 ): Promise<InferSelectModel<typeof user> | null> {
+  const [isOrganizationMember] = await database
+    .select({ id: member.id })
+    .from(member)
+    .where(
+      and(eq(member.userId, id), eq(member.organizationId, organizationId))
+    )
+    .limit(1);
+
+  if (!isOrganizationMember) {
+    return null;
+  }
+
   const existing = await database.query.user.findFirst({
     where: (u, { eq: equals }) => equals(u.id, id),
   });

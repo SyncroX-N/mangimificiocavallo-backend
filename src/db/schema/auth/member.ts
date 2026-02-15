@@ -1,12 +1,6 @@
 import { sql } from "drizzle-orm";
-import {
-  boolean,
-  index,
-  pgTable,
-  text,
-  timestamp,
-  uuid,
-} from "drizzle-orm/pg-core";
+import { boolean, index, pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
+import { role } from "./enums";
 import { organization } from "./organization";
 import { user } from "./user";
 
@@ -29,7 +23,7 @@ export const member = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    role: text("role").default("member").notNull(),
+    role: role("role").notNull(),
     /**
      * Tracks if the member is active (can handle conversations).
      * Primarily used for owner/admin roles acting as concierges.

@@ -27,7 +27,7 @@ export const DEFAULT_PLACE_FIELDS = [
   "regularOpeningHours",
 ].join(",");
 
-export function buildHeaders(apiKey: string, fieldMask?: string): HeadersInit {
+export function buildHeaders(apiKey: string, fieldMask?: string) {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     "X-Goog-Api-Key": apiKey,
@@ -46,12 +46,16 @@ export async function parseJsonResponse<T>(
 ): Promise<T> {
   const contentType = response.headers.get("content-type");
   const isJson = contentType?.includes("application/json");
-  const payload = isJson ? await response.json() : null;
+  const payload: unknown = isJson ? await response.json() : null;
 
   if (!response.ok) {
+    const errorPayload =
+      payload && typeof payload === "object"
+        ? (payload as { error?: { message?: string }; message?: string })
+        : {};
     const message =
-      payload?.error?.message ??
-      payload?.message ??
+      errorPayload.error?.message ??
+      errorPayload.message ??
       fallbackMessage ??
       "Failed to fetch data from Google Places";
     throw new Error(message);

@@ -13,6 +13,8 @@ import {
   parseJsonResponse,
 } from "./utils";
 
+const ITALY_REGION_CODE = "it";
+
 class GooglePlacesService {
   private static instance: GooglePlacesService;
   private readonly apiKey: string;
@@ -40,7 +42,8 @@ class GooglePlacesService {
       input: params.input,
       sessionToken: params.sessionToken,
       languageCode: params.languageCode,
-      regionCode: params.regionCode,
+      regionCode: ITALY_REGION_CODE,
+      includedRegionCodes: [ITALY_REGION_CODE],
       includedPrimaryTypes: params.includedPrimaryTypes,
       locationBias: params.locationBias
         ? {
