@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "trotter-backend",
+      "name": "mangimificio-backend",
       "dependencies": {
         "@better-auth/expo": "^1.4.1",
         "@hono/sentry": "^1.2.2",

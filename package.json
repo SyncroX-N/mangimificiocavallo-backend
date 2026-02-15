@@ -1,5 +1,5 @@
 {
-  "name": "trotter-backend",
+  "name": "mangimificio-backend",
   "main": "./src/server.ts",
   "types": "./src/types.ts",
   "engines": {
@@ -25,7 +25,7 @@
     "db:studio": "bunx -b drizzle-kit studio",
     "db:auth-generate": "bunx --bun @better-auth/cli generate",
     "lint": "bunx ultracite fix",
-    "prepare": "lefthook install",
+    "prepare": "[ -d .git ] && lefthook install || true",
     "check": "ultracite check",
     "fix": "ultracite fix"
   },
