@@ -10,5 +10,5 @@ export const CONFIG = {
     companyRole: "production_manager",
     role: "owner",
   },
-  password: "12345678",
+  password: "MangimiCavallo!_2026!",
 } as const;

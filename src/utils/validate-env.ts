@@ -6,6 +6,7 @@ const envSchema = z.object({
   SENTRY_DSN: z.string().optional(),
   SENTRY_DNS: z.string().optional(),
   BETTER_AUTH_URL: z.string(),
+  BETTER_AUTH_COOKIE_DOMAIN: z.string().optional(),
   BASE_URL: z.string().optional(),
   BETTER_AUTH_SECRET: z.string(),
   GOOGLE_PLACES_API_KEY: z.string(),

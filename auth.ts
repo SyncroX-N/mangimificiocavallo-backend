@@ -11,6 +11,7 @@ import { getAllowedOrigins } from "@/utils/allowed-origins";
 
 const baseUrl = process.env.BETTER_AUTH_URL ?? process.env.BASE_URL;
 const secret = process.env.BETTER_AUTH_SECRET;
+const crossSubDomainCookieDomain = process.env.BETTER_AUTH_COOKIE_DOMAIN;
 
 export const auth = betterAuth({
   baseURL: baseUrl,
@@ -101,6 +102,14 @@ export const auth = betterAuth({
     database: {
       generateId: "uuid",
     },
+    ...(crossSubDomainCookieDomain
+      ? {
+          crossSubDomainCookies: {
+            enabled: true,
+            domain: crossSubDomainCookieDomain,
+          },
+        }
+      : {}),
   },
   emailAndPassword: {
     enabled: true,
