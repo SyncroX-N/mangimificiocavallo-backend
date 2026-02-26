@@ -13,6 +13,7 @@ import {
   userRelations,
 } from "./auth/relations";
 import { session } from "./auth/session";
+import { team, teamMember } from "./auth/team";
 import { user } from "./auth/user";
 import { verification } from "./auth/verification";
 import { customerAddress, customerAddressType } from "./customer/address";
@@ -41,12 +42,10 @@ export {
   userRelations,
 } from "./auth/relations";
 export { session } from "./auth/session";
+export { team, teamMember } from "./auth/team";
 export { user } from "./auth/user";
 export { verification } from "./auth/verification";
-export {
-  customerAddress,
-  customerAddressType,
-} from "./customer/address";
+export { customerAddress, customerAddressType } from "./customer/address";
 export { customer } from "./customer/customer";
 export {
   customerAddressRelations,
@@ -78,6 +77,8 @@ export default {
   order,
   paymentLineItem,
   payment,
+  team,
+  teamMember,
   // Relations
   userRelations,
   sessionRelations,

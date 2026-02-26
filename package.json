@@ -14,6 +14,7 @@
     "start": "bun run src/server.ts",
     "start:railway": "bun run db:migrate && bun run start",
     "build": "bunx tsc --build",
+    "sync:admin-rpc-types": "bunx tsc --build && [ -d ../admin/src ] && mkdir -p ../admin/src/generated && cp dist/src/app.d.ts ../admin/src/generated/backend-app.d.ts || (echo \"Admin repo not found at ../admin\" && exit 1)",
     "type-check": "bunx tsc --noEmit",
     "db:up": "docker compose up -d db",
     "db:down": "docker compose down",
