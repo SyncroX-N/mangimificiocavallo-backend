@@ -1,5 +1,3 @@
-import { sentry } from "@hono/sentry";
-
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { csrf } from "hono/csrf";
@@ -47,13 +45,13 @@ const app = new Hono({ strict: false })
   .use("*", prettyJSON())
   .use("*", secureHeaders())
   .use("*", timing())
-  .use(
-    "*",
-    sentry({
-      dsn: process.env.SENTRY_DSN ?? process.env.SENTRY_DNS,
-      tracesSampleRate: 0.2,
-    })
-  )
+  // .use(
+  //   "*",
+  //   sentry({
+  //     dsn: process.env.SENTRY_DSN ?? process.env.SENTRY_DNS,
+  //     tracesSampleRate: 0.2,
+  //   })
+  // )
   // Routes
   // .route("/app", appRoutes) //@TODO: add app routes
   // .route("/admin", adminRoutes) //@TODO: add admin routes
