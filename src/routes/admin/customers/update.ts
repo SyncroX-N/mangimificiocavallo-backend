@@ -11,6 +11,7 @@ interface UpdateCustomerParams {
 
 export const updateCustomerSchema = z.object({
   businessName: z.string().trim().min(1).optional(),
+  fiscalCode: z.string().trim().min(1).nullable().optional(),
   taxId: z.string().trim().min(1).nullable().optional(),
   vatNumber: z.string().trim().min(1).nullable().optional(),
 });

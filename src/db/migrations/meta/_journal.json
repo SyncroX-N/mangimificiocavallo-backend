@@ -15,6 +15,20 @@
       "when": 1772543943986,
       "tag": "0001_sparkling_thing",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1772554124018,
+      "tag": "0002_confused_dreadnoughts",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1772554134437,
+      "tag": "0003_chemical_cloak",
+      "breakpoints": true
     }
   ]
 }

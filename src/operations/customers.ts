@@ -10,7 +10,12 @@ import {
   or,
 } from "drizzle-orm";
 import database from "@/db";
-import { customer, customerAddress, payment } from "@/db/schema";
+import {
+  customer,
+  customerAddress,
+  customerContact,
+  payment,
+} from "@/db/schema";
 import type { CreateCustomerInput } from "@/routes/admin/customers/create";
 import type { CreateCustomerAddressInput } from "@/routes/admin/customers/create-address";
 import type { ListCustomersParams } from "@/routes/admin/customers/list";
@@ -131,10 +136,19 @@ export async function listCustomers(
     .from(customerAddress)
     .where(inArray(customerAddress.customerId, customerIds))
     .orderBy(desc(customerAddress.isPrimary), desc(customerAddress.createdAt));
+  const contacts = await database
+    .select()
+    .from(customerContact)
+    .where(inArray(customerContact.customerId, customerIds))
+    .orderBy(desc(customerContact.createdAt));
 
   const addressesByCustomerId = new Map<
     string,
     InferSelectModel<typeof customerAddress>[]
+  >();
+  const contactsByCustomerId = new Map<
+    string,
+    InferSelectModel<typeof customerContact>[]
   >();
 
   for (const address of addresses) {
@@ -143,9 +157,16 @@ export async function listCustomers(
     addressesByCustomerId.set(address.customerId, existing);
   }
 
+  for (const contact of contacts) {
+    const existing = contactsByCustomerId.get(contact.customerId) ?? [];
+    existing.push(contact);
+    contactsByCustomerId.set(contact.customerId, existing);
+  }
+
   const customers = customerRows.map((item) => ({
     ...item,
     addresses: addressesByCustomerId.get(item.id) ?? [],
+    contacts: contactsByCustomerId.get(item.id) ?? [],
   }));
 
   return { customers, total };
@@ -165,8 +186,8 @@ export async function createCustomer(
         organizationId,
         businessName: input.businessName.trim(),
         domain: normalizeOptionalDomain(input.domain),
-        contactPhoneNumber: normalizeOptionalText(input.contactPhoneNumber),
         clientCode: normalizeOptionalText(input.clientCode),
+        fiscalCode: normalizeOptionalText(input.fiscalCode),
         taxId: normalizeOptionalText(input.taxId),
         vatNumber: normalizeOptionalText(input.vatNumber),
       })
@@ -189,6 +210,16 @@ export async function createCustomer(
         isPrimary: address.isPrimary,
       }))
     );
+
+    if (input.contacts && input.contacts.length > 0) {
+      await tx.insert(customerContact).values(
+        input.contacts.map((contact) => ({
+          customerId: created.id,
+          type: contact.type,
+          value: contact.value.trim(),
+        }))
+      );
+    }
 
     return created;
   });
@@ -217,6 +248,9 @@ export async function updateCustomer(
   const updates: Partial<InferSelectModel<typeof customer>> = {
     ...(input.businessName !== undefined && {
       businessName: input.businessName.trim(),
+    }),
+    ...(input.fiscalCode !== undefined && {
+      fiscalCode: normalizeOptionalText(input.fiscalCode),
     }),
     ...(input.taxId !== undefined && {
       taxId: normalizeOptionalText(input.taxId),

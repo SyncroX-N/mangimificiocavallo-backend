@@ -17,9 +17,11 @@ import { team, teamMember } from "./auth/team";
 import { user } from "./auth/user";
 import { verification } from "./auth/verification";
 import { customerAddress, customerAddressType } from "./customer/address";
+import { customerContact, customerContactType } from "./customer/contact";
 import { customer } from "./customer/customer";
 import {
   customerAddressRelations,
+  customerContactRelations,
   customerRelations,
 } from "./customer/relations";
 import { order } from "./order/order";
@@ -46,9 +48,11 @@ export { team, teamMember } from "./auth/team";
 export { user } from "./auth/user";
 export { verification } from "./auth/verification";
 export { customerAddress, customerAddressType } from "./customer/address";
+export { customerContact, customerContactType } from "./customer/contact";
 export { customer } from "./customer/customer";
 export {
   customerAddressRelations,
+  customerContactRelations,
   customerRelations,
 } from "./customer/relations";
 export { order } from "./order/order";
@@ -63,6 +67,7 @@ export default {
   paymentMode,
   paymentStatus,
   customerAddressType,
+  customerContactType,
   documentType,
   // Tables
   organization,
@@ -74,6 +79,7 @@ export default {
   invitation,
   customer,
   customerAddress,
+  customerContact,
   order,
   paymentLineItem,
   payment,
@@ -88,4 +94,5 @@ export default {
   invitationRelations,
   customerRelations,
   customerAddressRelations,
+  customerContactRelations,
 };

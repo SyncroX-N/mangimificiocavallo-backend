@@ -1,5 +1,6 @@
 import type { Context } from "hono";
 import z from "zod";
+import { customerContactType } from "@/db/schema";
 import { createCustomer } from "@/operations/customers";
 import { createCustomerAddressSchema } from "./create-address";
 
@@ -12,10 +13,18 @@ export const createCustomerSchema = z
   .object({
     businessName: z.string().trim().min(1),
     domain: z.string().trim().min(1).nullable().optional(),
-    contactPhoneNumber: z.string().trim().min(1).nullable().optional(),
     clientCode: z.string().trim().min(1).nullable().optional(),
+    fiscalCode: z.string().trim().min(1).nullable().optional(),
     taxId: z.string().trim().min(1).nullable().optional(),
     vatNumber: z.string().trim().min(1).nullable().optional(),
+    contacts: z
+      .array(
+        z.object({
+          type: z.enum(customerContactType.enumValues),
+          value: z.string().trim().min(1),
+        })
+      )
+      .optional(),
     addresses: z
       .array(
         createCustomerAddressSchema.extend({
