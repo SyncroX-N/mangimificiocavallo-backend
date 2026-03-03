@@ -35,4 +35,5 @@ export const paymentStatus = pgEnum("payment_status", [
 export const documentType = pgEnum("document_type", [
   "transport_document",
   "invoice",
+  "credit_note",
 ]);

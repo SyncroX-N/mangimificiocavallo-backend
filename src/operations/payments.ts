@@ -234,7 +234,16 @@ export async function listPaymentsForExport(
     )
     .orderBy(desc(payment.createdAt));
 
-  return { payments };
+  const paymentIds = payments.map((paymentRow) => paymentRow.id);
+  const lineItemsByPaymentId =
+    await getPaymentLineItemsByPaymentIds(paymentIds);
+
+  return {
+    payments: payments.map((paymentRow) => ({
+      ...paymentRow,
+      lineItems: lineItemsByPaymentId.get(paymentRow.id) ?? [],
+    })),
+  };
 }
 
 /**
