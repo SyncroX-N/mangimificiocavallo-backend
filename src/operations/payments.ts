@@ -6,13 +6,16 @@ import {
   desc,
   eq,
   exists,
+  gte,
   ilike,
   inArray,
+  lte,
   or,
 } from "drizzle-orm";
 import database from "@/db";
 import { customer, organization, payment, paymentLineItem } from "@/db/schema";
 import type { CreatePaymentInput } from "@/routes/admin/payments/create";
+import type { ExportPaymentsParams } from "@/routes/admin/payments/export";
 import type { ListPaymentsParams } from "@/routes/admin/payments/list";
 import type { UpdatePaymentInput } from "@/routes/admin/payments/update";
 
@@ -31,6 +34,8 @@ const publicPaymentColumns = {
   amount: payment.amount,
   currency: payment.currency,
   status: payment.status,
+  expiresAt: payment.expiresAt,
+  paidAt: payment.paidAt,
   createdAt: payment.createdAt,
   organizationName: organization.name,
   customerBusinessName: customer.businessName,
@@ -193,6 +198,45 @@ export async function listPayments(
   };
 }
 
+function getRangeStart(date: Date) {
+  const result = new Date(date);
+  result.setHours(0, 0, 0, 0);
+  return result;
+}
+
+function getRangeEnd(date: Date) {
+  const result = new Date(date);
+  result.setHours(23, 59, 59, 999);
+  return result;
+}
+
+/**
+ * List payments for CSV export (scoped to organization, filtered by createdAt range)
+ */
+export async function listPaymentsForExport(
+  organizationId: string,
+  params: ExportPaymentsParams
+) {
+  const from = getRangeStart(params.from);
+  const to = getRangeEnd(params.to);
+
+  const payments = await database
+    .select(publicPaymentColumns)
+    .from(payment)
+    .leftJoin(organization, eq(organization.id, payment.organizationId))
+    .leftJoin(customer, eq(customer.id, payment.customerId))
+    .where(
+      and(
+        eq(payment.organizationId, organizationId),
+        gte(payment.createdAt, from),
+        lte(payment.createdAt, to)
+      )
+    )
+    .orderBy(desc(payment.createdAt));
+
+  return { payments };
+}
+
 /**
  * Create a payment (organization id is always taken from authenticated context)
  */
@@ -262,6 +306,12 @@ export async function updatePayment(
       }),
       ...(input.status !== undefined && {
         status: input.status,
+      }),
+      ...(input.expiresAt !== undefined && {
+        expiresAt: input.expiresAt,
+      }),
+      ...(input.paidAt !== undefined && {
+        paidAt: input.paidAt,
       }),
       ...(input.lineItems !== undefined && {
         amount: getLineItemsTotalAmount(input.lineItems),

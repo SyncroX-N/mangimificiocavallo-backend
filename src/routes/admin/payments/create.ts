@@ -47,9 +47,13 @@ export async function createPaymentHandler(
   const { organizationId, input } = params;
   const resolvedStatus =
     input.paymentMode === "check" ? "pending" : "completed";
+  const resolvedPaidAt =
+    input.paymentMode === "check" ? input.paidAt : (input.paidAt ?? new Date());
+
   const result = await createPayment(organizationId, {
     ...input,
     status: resolvedStatus,
+    paidAt: resolvedPaidAt,
   });
 
   return c.json({ data: result }, 201);

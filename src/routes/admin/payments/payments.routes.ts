@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import z from "zod";
 import { createPaymentHandler, createPaymentSchema } from "./create";
 import { deletePayment, deletePayments, deletePaymentsSchema } from "./delete";
+import { exportPayments, exportPaymentsSchema } from "./export";
 import { getPayment } from "./get";
 import { getPaymentsSchema, list } from "./list";
 import { updatePaymentHandler, updatePaymentSchema } from "./update";
@@ -43,6 +44,16 @@ const paymentsRoutes = new Hono()
     const member = c.get("member");
 
     return await deletePayments(c, ids, member.organizationId);
+  })
+  .get("/export", zValidator("query", exportPaymentsSchema), async (c) => {
+    const { from, to } = c.req.valid("query");
+    const member = c.get("member");
+
+    return await exportPayments(c, {
+      organizationId: member.organizationId,
+      from,
+      to,
+    });
   })
   .get("/:id", zValidator("param", paymentIdParamSchema), async (c) => {
     const id = resolvePaymentIdParam(c.req.valid("param"));

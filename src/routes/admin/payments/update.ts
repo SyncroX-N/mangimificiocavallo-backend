@@ -19,6 +19,8 @@ export const updatePaymentSchema = z.object({
   orderId: z.uuid().nullable().optional(),
   paymentMode: z.enum(paymentMode.enumValues).optional(),
   status: z.enum(paymentStatus.enumValues).optional(),
+  expiresAt: z.coerce.date().nullable().optional(),
+  paidAt: z.coerce.date().nullable().optional(),
   lineItems: z
     .array(
       z.object({
