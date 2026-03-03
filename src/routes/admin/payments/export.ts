@@ -72,6 +72,31 @@ function getPaymentStatusLabel(status: string | null | undefined) {
   return labels[status as keyof typeof labels] ?? status;
 }
 
+function getPaymentDocumentTypeLabel(documentType: string | null | undefined) {
+  if (!documentType) {
+    return "";
+  }
+
+  const labels = {
+    transport_document: "Documento di trasporto",
+    invoice: "Fattura",
+  } as const;
+
+  return labels[documentType as keyof typeof labels] ?? documentType;
+}
+
+function formatAmount(value: string | number | null | undefined) {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) {
+    return "";
+  }
+
+  return new Intl.NumberFormat("it-IT", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(numericValue);
+}
+
 export async function exportPayments(
   c: Context,
   params: ExportPaymentsHandlerParams
@@ -84,33 +109,51 @@ export async function exportPayments(
   });
 
   const headers = [
-    "id",
-    "azienda",
-    "importo",
-    "valuta",
-    "metodo_pagamento",
-    "stato",
-    "pagato_il",
-    "scadenza",
-    "creato_il",
+    "ID pagamento",
+    "Azienda",
+    "Importo totale",
+    "Valuta",
+    "Metodo pagamento",
+    "Stato",
+    "Pagato il",
+    "Scadenza",
+    "Creato il",
+    "Tipo documento",
+    "Numero documento",
+    "Importo riga",
+    "Immagine allegata",
   ];
+
+  const rows = payments.flatMap((payment) => {
+    const paymentColumns = [
+      payment.id,
+      payment.customerBusinessName ?? "",
+      formatAmount(payment.amount),
+      payment.currency,
+      getPaymentModeLabel(payment.paymentMode),
+      getPaymentStatusLabel(payment.status),
+      formatCsvDate(payment.paidAt),
+      formatCsvDate(payment.expiresAt),
+      formatCsvDate(payment.createdAt),
+    ];
+
+    if (payment.lineItems.length === 0) {
+      return [[...paymentColumns, "", "", "", "No"]];
+    }
+
+    return payment.lineItems.map((lineItem) => [
+      ...paymentColumns,
+      getPaymentDocumentTypeLabel(lineItem.documentType),
+      lineItem.documentId,
+      formatAmount(lineItem.amount),
+      lineItem.imageUrl ? "Sì" : "No",
+    ]);
+  });
 
   const csvLines = [
     headers.join(","),
-    ...payments.map((payment) =>
-      [
-        payment.id,
-        payment.customerBusinessName ?? "",
-        payment.amount,
-        payment.currency,
-        getPaymentModeLabel(payment.paymentMode),
-        getPaymentStatusLabel(payment.status),
-        formatCsvDate(payment.paidAt),
-        formatCsvDate(payment.expiresAt),
-        formatCsvDate(payment.createdAt),
-      ]
-        .map((value) => escapeCsvValue(String(value)))
-        .join(",")
+    ...rows.map((row) =>
+      row.map((value) => escapeCsvValue(String(value))).join(",")
     ),
   ];
 
